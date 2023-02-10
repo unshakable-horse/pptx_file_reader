@@ -161,7 +161,7 @@ function App() {
 
     return (
 
-        <Layout style={containerStyle}>
+        <Layout style={{ width: '100%', height: '100%' }}>
             <Header style={headerStyle}>{title}</Header>
             <Layout>
                 <Sider style={siderStyle}>
