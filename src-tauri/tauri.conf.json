@@ -28,7 +28,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "pptx-file-reader",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -55,10 +55,9 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
-        "resizable": true,
-        "title": "pptx_file_reader",
-        "width": 800
+
+        "maximized": false,
+        "title": "PPTX File Reader"
       }
     ]
   }

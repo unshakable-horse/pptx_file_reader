@@ -55,22 +55,48 @@ function App() {
     const [filePath, setFilePath] = useState("");
 
     useEffect(() => {
-        const unlisten = listen("tauri://file-drop", (event) => {
-            let file_path: any = event.payload;
-            setTitle(file_path);
-            (async () => {
-                console.log(file_path);
-                let name = file_path.toString();
-                let nodes: DataNode[] = await invoke("greet", {name});
-                console.log("nodes", nodes);
-                setTreeData(nodes);
-                setContent("");
-            })();
-        });
-        return () => {
-            unlisten.then(f => f());
-        }
-    }, []);
+            const listen_file_drop = listen("tauri://file-drop", (event) => {
+                let file_path: any = event.payload;
+                setTitle(file_path);
+                (async () => {
+                    console.log(file_path);
+                    let name = file_path.toString();
+                    let nodes: DataNode[] = await invoke("greet", {name});
+                    console.log("nodes", nodes);
+                    setTreeData(nodes);
+                    setContent("");
+                })();
+            });
+            return () => {
+                listen_file_drop.then(f => f());
+            }
+        }, []
+    );
+
+    useEffect(() => {
+            const listen_file_drop = listen("open_file", (event) => {
+                console.log(event);
+            });
+            return () => {
+                listen_file_drop.then(f => f());
+            }
+        }, []
+    );
+
+
+    // async function readFile() {
+    //     console.log("readFile");
+    //     let selectedPath = await open({
+    //         multiple: false,
+    //         filters: [{
+    //             name: 'PPTX',
+    //             extensions: ['pptx']
+    //         }]
+    //     });
+    //     console.log(selectedPath)
+    // }
+
+
 
 
     document.onkeydown = (e: KeyboardEvent) => {
@@ -165,15 +191,11 @@ function App() {
             <Header style={headerStyle}>{title}</Header>
             <Layout>
                 <Sider style={siderStyle}>
-                    <Tree onSelect={onSelect} treeData={treeData}>
-
-                    </Tree>
-
+                    <Tree onSelect={onSelect} treeData={treeData}></Tree>
                 </Sider>
                 <Content style={contentStyle}>
                     <Editor
-
-                        // height="90vh"
+                        // height="98%"
                         path={filePath}
                         defaultLanguage="xml"
                         value={content}

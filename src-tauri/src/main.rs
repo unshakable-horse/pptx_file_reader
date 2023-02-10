@@ -3,11 +3,14 @@ all(not(debug_assertions), target_os = "windows"),
 windows_subsystem = "windows"
 )]
 
+mod menu;
+
 use std::{collections::HashMap, fs::File};
 use std::io::Read;
 
 use serde::Serialize;
 use zip::ZipArchive;
+use crate::menu::init;
 
 #[derive(Debug)]
 struct Path {
@@ -93,7 +96,7 @@ fn read_xml(key: &str) -> String {
         let zip = CURRENT_ZIP.as_mut().unwrap();
         let mut file = zip.by_name(key).unwrap();
         let mut xml = String::new();
-        file.read_to_string(&mut xml);
+        let _ = file.read_to_string(&mut xml);
         xml
     }
 }
@@ -101,7 +104,6 @@ fn read_xml(key: &str) -> String {
 
 fn build_tree(node: &mut Dir, parts: &Vec<String>, depth: usize) {
     if depth < parts.len() {
-
         let item = &parts[depth];
 
         let mut dir = match node.find_child(&item) {
@@ -117,8 +119,8 @@ fn build_tree(node: &mut Dir, parts: &Vec<String>, depth: usize) {
             }
         };
         build_tree(&mut dir, parts, depth + 1);
-    }else{
-        if node.title.ends_with(".xml") || node.title.ends_with(".rels"){
+    } else {
+        if node.title.ends_with(".xml") || node.title.ends_with(".rels") {
             node.selectable = true;
         }
     }
@@ -138,9 +140,25 @@ pub fn open(path: &str) -> ZipArchive<File> {
     return zip;
 }
 
+#[derive(Serialize, Clone)]
+struct Payload {
+    message: Option<String>,
+}
+
 fn main() {
+    let context = tauri::generate_context!();
+
     tauri::Builder::default()
+        .menu(init(&context))
+        .on_menu_event(|event| {
+            match event.menu_item_id() {
+                "open_file" => {
+                    let _ = event.window().emit("open_file", Payload { message: None });
+                }
+                _ => {}
+            }
+        })
         .invoke_handler(tauri::generate_handler![greet,read_xml])
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("error while running tauri application");
 }
