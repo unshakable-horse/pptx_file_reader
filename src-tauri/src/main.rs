@@ -84,6 +84,7 @@ fn greet(name: &str) -> Vec<Dir> {
     for (index, path) in file_names.iter().enumerate() {
         build_tree(&mut top, &path.parts, 0);
     }
+
     unsafe {
         CURRENT_ZIP = Some(zip_file);
     }
