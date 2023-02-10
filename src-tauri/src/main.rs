@@ -85,8 +85,6 @@ fn greet(name: &str) -> Vec<Dir> {
         build_tree(&mut top, &path.parts, 0);
     }
 
-
-
     unsafe {
         CURRENT_ZIP = Some(zip_file);
     }
