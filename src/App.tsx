@@ -1,14 +1,16 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import reactLogo from "./assets/react.svg";
 import {invoke} from "@tauri-apps/api/tauri";
 import "./App.css";
 import 'antd/dist/reset.css'
-import Editor, {DiffEditor, useMonaco, loader} from "@monaco-editor/react";
+import Editor, {DiffEditor, useMonaco, loader, Monaco} from "@monaco-editor/react";
 import type {DataNode} from 'antd/es/tree'
 import {Button, Layout, Tree} from "antd";
 import {Content, Footer, Header} from "antd/es/layout/layout";
 import Sider from "antd/es/layout/Sider";
 import {listen} from "@tauri-apps/api/event";
+import {open} from "@tauri-apps/api/dialog"
+
 
 const containerStyle: React.CSSProperties = {
     height: window.innerHeight
@@ -52,7 +54,10 @@ function App() {
     const [treeData, setTreeData] = useState(initTreeData);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
-    const [filePath, setFilePath] = useState("");
+    const editorRef = useRef(null);
+    const handleEditorDidMount = (editor: any, monaco: Monaco) => {
+        // editorRef.current = editor;
+    }
 
     useEffect(() => {
             const listen_file_drop = listen("tauri://file-drop", (event) => {
@@ -74,29 +79,35 @@ function App() {
     );
 
     useEffect(() => {
-            const listen_file_drop = listen("open_file", (event) => {
-                console.log(event);
+            const listen_file_drop = listen("open_file", async (event) => {
+                let file_path = await open({
+                    multiple: false,
+                    filters: [{
+                        name: 'PPTX',
+                        extensions: ['pptx']
+                    }]
+                });
+                console.log(file_path);
+
+                if (file_path) {
+                    let filePath = file_path.toString();
+                    setTitle(filePath);
+                    console.log(filePath);
+                    (async () => {
+                        let name = filePath.toString();
+                        let nodes: DataNode[] = await invoke("greet", {name});
+                        console.log("nodes", nodes);
+                        setTreeData(nodes);
+                        setContent("");
+                    })();
+                }
+
             });
             return () => {
                 listen_file_drop.then(f => f());
             }
         }, []
     );
-
-
-    // async function readFile() {
-    //     console.log("readFile");
-    //     let selectedPath = await open({
-    //         multiple: false,
-    //         filters: [{
-    //             name: 'PPTX',
-    //             extensions: ['pptx']
-    //         }]
-    //     });
-    //     console.log(selectedPath)
-    // }
-
-
 
 
     document.onkeydown = (e: KeyboardEvent) => {
@@ -187,7 +198,7 @@ function App() {
 
     return (
 
-        <Layout style={{ width: '100%', height: '100%' }}>
+        <Layout style={{width: '100%', height: '100%'}}>
             <Header style={headerStyle}>{title}</Header>
             <Layout>
                 <Sider style={siderStyle}>
@@ -196,8 +207,12 @@ function App() {
                 <Content style={contentStyle}>
                     <Editor
                         // height="98%"
-                        path={filePath}
+                        // path={filePath}
                         defaultLanguage="xml"
+                        onMount={(editor, monaco) => {
+                            editor.updateOptions({readOnly: true})
+                        }
+                        }
                         value={content}
                     />
                 </Content>
