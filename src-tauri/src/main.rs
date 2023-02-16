@@ -34,6 +34,7 @@ struct Dir {
     key: String,
     children: Vec<Dir>,
     selectable: bool,
+    disabled: bool,
 }
 
 impl Dir {
@@ -43,6 +44,7 @@ impl Dir {
             key: key.to_string(),
             children: Vec::<Dir>::new(),
             selectable: false,
+            disabled:true
         }
     }
 
@@ -105,6 +107,8 @@ fn read_xml(key: &str) -> String {
 
 fn build_tree(node: &mut Dir, parts: &Vec<String>, depth: usize) {
     if depth < parts.len() {
+        node.disabled = false;
+
         let item = &parts[depth];
 
         let mut dir = match node.find_child(&item) {
@@ -123,6 +127,7 @@ fn build_tree(node: &mut Dir, parts: &Vec<String>, depth: usize) {
     } else {
         if node.title.ends_with(".xml") || node.title.ends_with(".rels") {
             node.selectable = true;
+            node.disabled = false;
         }
     }
 }
