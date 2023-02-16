@@ -54,10 +54,6 @@ function App() {
     const [treeData, setTreeData] = useState(initTreeData);
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
-    const editorRef = useRef(null);
-    const handleEditorDidMount = (editor: any, monaco: Monaco) => {
-        // editorRef.current = editor;
-    }
 
     useEffect(() => {
             const listen_file_drop = listen("tauri://file-drop", (event) => {
